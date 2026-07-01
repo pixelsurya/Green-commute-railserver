@@ -1,19 +1,25 @@
-# Use Java 17 slim — OpenRailRouting needs Java to run
+# Stage 1: Build OpenRailRouting from source
+FROM maven:3.9-eclipse-temurin-17 AS builder
+
+WORKDIR /build
+
+# Clone the repo at the v1.1 release tag
+RUN apt-get update && apt-get install -y git && \
+    git clone --depth 1 --branch v1.1 \
+    https://github.com/geofabrik/OpenRailRouting.git .
+
+# Build the JAR (skip tests to keep build fast)
+RUN mvn clean package -DskipTests -q
+
+# Stage 2: Runtime image — much smaller, no Maven/JDK needed
 FROM eclipse-temurin:17-jre-jammy
 
-# Install wget to download OSM data at build time
-RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
-
-# Set working directory inside the container
 WORKDIR /app
 
-# Download OpenRailRouting JAR from GitHub releases
-# This is the prebuilt JAR so you don't need to compile Java yourself
-ARG ORR_VERSION=0.0.1-SNAPSHOT
-RUN wget -O railway_routing.jar \
-    https://github.com/geofabrik/OpenRailRouting/releases/latest/download/railway_routing.jar
+# Copy only the built JAR from Stage 1
+COPY --from=builder /build/target/railway_routing-*.jar railway_routing.jar
 
-# Copy your config and OSM data into the container
+# Copy your config and OSM data
 COPY config.yml .
 COPY india-rail.osm.pbf .
 
@@ -21,7 +27,7 @@ COPY india-rail.osm.pbf .
 EXPOSE 8989
 
 # On startup: import the OSM data and start serving
-# -Xmx512m limits memory to stay within Render's free tier (512MB RAM)
+# -Xmx450m limits memory to stay within Render's free tier (512MB RAM)
 CMD ["java", "-Xmx450m", "-Xms50m", \
      "-Ddw.graphhopper.datareader.file=india-rail.osm.pbf", \
      "-jar", "railway_routing.jar", \
