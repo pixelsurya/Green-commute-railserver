@@ -1,0 +1,36 @@
+graphhopper:
+  # The OSM data file (matched to Dockerfile COPY above)
+  datareader.file: india-rail.osm.pbf
+
+  # Where to store the preprocessed routing graph
+  graph.location: ./graph-cache
+
+  # Railway-specific encoded values — these are what make
+  # OpenRailRouting understand rail track types vs roads
+  graph.encoded_values: >
+    gauge,voltage,electrified,frequency,road_environment,
+    max_speed,rail_access,rail_average_speed,
+    railway_class,railway_service,preferred_direction
+
+  # The routing profile — "rail" routes only on railway=rail tracks
+  # This is the key line: profile=rail means only mainline
+  # Indian Railways tracks, not trams, subways, or roads
+  profiles:
+    - name: rail
+      vehicle: rail
+      weighting: fastest
+
+  # Speed mode preprocessing — makes queries much faster
+  # after the initial import (which only happens once)
+  profiles_ch:
+    - profile: rail
+
+  # Server config — Render routes traffic to whatever port
+  # your app exposes, which we set to 8989
+  server:
+    application_connectors:
+      - type: http
+        port: 8989
+    admin_connectors:
+      - type: http
+        port: 8990
