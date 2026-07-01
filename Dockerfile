@@ -3,12 +3,16 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /build
 
+# Install git AND nodejs/npm — OpenRailRouting's Maven build
+# requires npm to build its web frontend
+RUN apt-get update && apt-get install -y git nodejs npm && \
+    rm -rf /var/lib/apt/lists/*
+
 # Clone the repo at the v1.1 release tag
-RUN apt-get update && apt-get install -y git && \
-    git clone --depth 1 --branch v1.1 \
+RUN git clone --depth 1 --branch v1.1 \
     https://github.com/geofabrik/OpenRailRouting.git .
 
-# Build the JAR (skip tests to keep build fast)
+# Build the JAR — npm is now available so this won't fail
 RUN mvn clean package -DskipTests -q
 
 # Stage 2: Runtime image — much smaller, no Maven/JDK needed
