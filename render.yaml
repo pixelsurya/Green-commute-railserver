@@ -5,8 +5,8 @@ services:
     plan: free
     # Render builds your Dockerfile automatically
     dockerfilePath: ./Dockerfile
-    # The port your app listens on (must match config.yml)
-    port: 8989
+    # Changed to 8080 to match what Dropwizard actually binds to
+    port: 8080
     # Render free tier: spins down after 15min inactivity
     # First request after idle will be slow (cold start)
     healthCheckPath: /health
