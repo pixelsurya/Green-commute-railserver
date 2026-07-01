@@ -1,0 +1,30 @@
+{
+  "speed": [
+    {
+      "if": "railway_class == RAIL",
+      "limit_to": 100
+    },
+    {
+      "if": "railway_class == LIGHT_RAIL",
+      "limit_to": 80
+    },
+    {
+      "if": "railway_class == SUBWAY",
+      "limit_to": 80
+    },
+    {
+      "if": "railway_class == NARROW_GAUGE",
+      "limit_to": 50
+    },
+    {
+      "else": "",
+      "limit_to": 50
+    }
+  ],
+  "priority": [
+    {
+      "if": "railway_service == SIDING || railway_service == YARD || railway_service == SPUR",
+      "multiply_by": 0.1
+    }
+  ]
+}
