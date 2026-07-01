@@ -23,7 +23,7 @@ graphhopper:
   server:
     application_connectors:
       - type: http
-        port: 8989
+        port: 8080
     admin_connectors:
       - type: http
-        port: 8990
+        port: 8081
