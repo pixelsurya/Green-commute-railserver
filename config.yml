@@ -3,6 +3,8 @@ graphhopper:
   graph.location: ./graph-cache
   custom_models.directory: ./custom_models
 
+  import.osm.ignored_highways: motorway,trunk,primary,secondary,tertiary,road,residential,unclassified,service,track,path,footway,cycleway,steps,living_street,pedestrian
+
   graph.encoded_values: >-
     gauge,voltage,electrified,frequency,road_environment,
     max_speed,rail_access,rail_average_speed,
