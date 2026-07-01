@@ -11,14 +11,15 @@ RUN git clone --depth 1 --branch v1.1 \
 
 RUN mvn clean package -DskipTests -q
 
-# Extract the built-in custom model JSON files from the JAR
-# so they're available on the filesystem at runtime
+# List JAR contents to find where custom profile JSONs actually are
+RUN jar tf /build/target/railway_routing-*.jar | grep -i "json\|profile\|custom" || true
+
+# Copy the entire source custom_profiles directory to filesystem
 RUN mkdir -p /custom_models && \
-    cd /custom_models && \
-    jar xf /build/target/railway_routing-*.jar \
-    com/graphhopper/custom_profiles/alltracks.json && \
-    cp com/graphhopper/custom_profiles/alltracks.json . && \
-    rm -rf com
+    cp /build/src/main/resources/com/graphhopper/custom_profiles/alltracks.json \
+       /custom_models/ || \
+    find /build/src -name "alltracks.json" -exec cp {} /custom_models/ \; || \
+    find /build -name "*.json" | head -20
 
 # Stage 2: Runtime image
 FROM eclipse-temurin:17-jre-jammy
@@ -26,7 +27,7 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 COPY --from=builder /build/target/railway_routing-*.jar railway_routing.jar
-COPY --from=builder /custom_models/alltracks.json ./custom_models/alltracks.json
+COPY --from=builder /custom_models/ ./custom_models/
 COPY config.yml .
 COPY india-rail.osm.pbf .
 
